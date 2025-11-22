@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Location Selection — Ground Update</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-draw@1.0.4/dist/leaflet.draw.css" />
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      #map { height: 480px; border-radius:8px; }
+      .map-panel { padding: .75rem; }
+      .selection-info { font-size: .9rem; color: #334155 }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-dark bg-primary px-3 modern-nav">
+      <div class="d-flex align-items-center container-fluid">
+        <div class="brand d-flex align-items-center me-3">
+          <div class="brand-mark d-flex align-items-center justify-content-center">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="24" height="24" rx="5" fill="url(#g)"/><defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#2b6ef6"/><stop offset="1" stop-color="#7b2bdc"/></linearGradient></defs></svg>
+          </div>
+          <span class="brand-text ms-2">IWMI Outreach System</span>
+        </div>
+        <div class="nav-spacer"></div>
+        <div class="d-flex align-items-center text-white modern-actions">
+          <a class="btn btn-link text-white p-0 me-3" href="ground-update.html">Back</a>
+          <div class="avatar">JD</div>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container my-4">
+      <h4 class="mb-3">Select Target Location</h4>
+      <div class="row">
+        <div class="col-lg-8">
+          <div id="map"></div>
+        </div>
+        <div class="col-lg-4 map-panel">
+          <p class="selection-info">Draw a polygon, rectangle or circle on the map to select the target area. Use the draw toolbar on the top-left of the map.</p>
+          <div class="mb-2"><strong>Selected geometry:</strong></div>
+          <pre id="geoJson" style="height:220px;overflow:auto;background:#f8fafc;padding:.6rem;border-radius:6px;border:1px solid #eef2f7">(none)</pre>
+          <div class="d-flex justify-content-between mt-3">
+            <button id="locCancel" class="btn btn-outline-secondary">Cancel</button>
+            <button id="locNext" class="btn btn-primary">Next: Audience &rarr;</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+    <script>
+      // initialize map
+      const map = L.map('map').setView([6.9271, 79.8612], 7); // center on Sri Lanka by default
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(map);
+
+      // feature group to store drawn items
+      const drawnItems = new L.FeatureGroup();
+      map.addLayer(drawnItems);
+
+      // draw control
+      const drawControl = new L.Control.Draw({
+        edit: { featureGroup: drawnItems },
+        draw: {
+          polygon: true,
+          rectangle: true,
+          circle: true,
+          polyline: false,
+          marker: true
+        }
+      });
+      map.addControl(drawControl);
+
+      function updateGeoJsonDisplay(layer) {
+        if (!layer) { document.getElementById('geoJson').textContent = '(none)'; return; }
+        let geo = layer.toGeoJSON();
+        document.getElementById('geoJson').textContent = JSON.stringify(geo.geometry, null, 2);
+        // persist to localStorage with the rest of draft
+        const draft = JSON.parse(localStorage.getItem('groundUpdateDraft') || '{}');
+        draft.geometry = geo.geometry;
+        localStorage.setItem('groundUpdateDraft', JSON.stringify(draft));
+      }
+
+      map.on(L.Draw.Event.CREATED, function (e) {
+        const layer = e.layer;
+        // clear previous selection (for simplicity keep a single selection)
+        drawnItems.clearLayers();
+        drawnItems.addLayer(layer);
+        updateGeoJsonDisplay(layer);
+      });
+
+      map.on('draw:edited', function(e) {
+        const layers = e.layers;
+        layers.eachLayer(l => updateGeoJsonDisplay(l));
+      });
+
+      map.on('draw:deleted', function() {
+        updateGeoJsonDisplay(null);
+      });
+
+      // Load draft geometry if present
+      const draft = JSON.parse(localStorage.getItem('groundUpdateDraft') || 'null');
+      if (draft && draft.geometry) {
+        const layer = L.geoJSON(draft.geometry);
+        layer.eachLayer(l => { drawnItems.addLayer(l); map.fitBounds(l.getBounds()); updateGeoJsonDisplay(l); });
+      }
+
+      document.getElementById('locCancel').addEventListener('click', () => {
+        window.location.href = 'ground-update.html';
+      });
+
+      document.getElementById('locNext').addEventListener('click', () => {
+        // Ensure a geometry exists
+        const currentDraft = JSON.parse(localStorage.getItem('groundUpdateDraft') || '{}');
+        if (!currentDraft.geometry) {
+          if (!confirm('No location selected. Continue without a spatial selection?')) return;
+        }
+        // proceed to trigger conditions step
+        window.location.href = 'ground-update-conditions.html';
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Trigger Conditions — Ground Update</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .rule-card{background:#fbfdff;border:1px solid #eef2f7;border-radius:10px;padding:12px;margin-bottom:12px}
+      .rule-row{gap:8px}
+      .and-or-btn{min-width:80px}
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-dark bg-primary px-3 modern-nav">
+      <div class="d-flex align-items-center container-fluid">
+        <div class="brand d-flex align-items-center me-3">
+          <div class="brand-mark d-flex align-items-center justify-content-center">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="24" height="24" rx="5" fill="url(#g)"/><defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#2b6ef6"/><stop offset="1" stop-color="#7b2bdc"/></linearGradient></defs></svg>
+          </div>
+          <span class="brand-text ms-2">IWMI Outreach System</span>
+        </div>
+        <div class="nav-spacer"></div>
+        <div class="d-flex align-items-center text-white modern-actions">
+          <a class="btn btn-link text-white p-0 me-3" href="ground-update-location.html">Back</a>
+          <div class="avatar">JD</div>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container my-4">
+      <h4 class="mb-3">Set Trigger Conditions</h4>
+
+      <div class="card p-3 mb-3">
+        <div class="mb-3 small text-muted">Define conditions that will trigger this campaign:</div>
+
+        <div id="rulesContainer">
+          <!-- rules will be inserted here -->
+        </div>
+
+        <div class="mb-3">
+          <button id="addRule" class="btn btn-link text-primary"><i class="bi bi-plus-circle me-1"></i> Add Another Rule</button>
+        </div>
+
+        <div class="d-flex align-items-center justify-content-between mt-3">
+          <div>
+            <label class="form-label small">Check Frequency</label>
+            <div class="d-flex align-items-center gap-2">
+              <select id="freqSelect" class="form-select form-select-sm" style="width:140px">
+                <option>Daily</option>
+                <option>Hourly</option>
+                <option>Weekly</option>
+              </select>
+              <input id="freqTime" type="time" class="form-control form-control-sm" style="width:120px" value="09:00">
+            </div>
+          </div>
+
+          <div>
+            <a href="ground-update-location.html" class="btn btn-outline-secondary me-2">← Previous</a>
+            <button id="conditionsNext" class="btn btn-primary">Next: Message →</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      // Data sources and fields (example items — can be extended or loaded)
+      const DATA_SOURCES = {
+        'Tubewells Data': ['Water Quality EC','pH','Nitrate'],
+        'Piezometer Data': ['Water Depth','Temperature'] ,
+        'Weather Stations': ['Rainfall','Temperature']
+      };
+
+      const OPERATORS = ['Greater than','Less than','Equal to','Not equal to'];
+
+      function createRuleNode(rule, index) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'rule-card';
+        wrapper.dataset.index = index;
+
+        const title = document.createElement('div');
+        title.className = 'd-flex justify-content-between align-items-center mb-2';
+        title.innerHTML = `<strong>Rule ${index+1}</strong><button class="btn btn-sm btn-link text-danger remove-rule">Remove Rule</button>`;
+        wrapper.appendChild(title);
+
+        const row = document.createElement('div');
+        row.className = 'd-flex rule-row';
+
+        // Data source select
+        const dsDiv = document.createElement('div'); dsDiv.style.flex = '1';
+        const dsSelect = document.createElement('select'); dsSelect.className='form-select form-select-sm';
+        for (const k of Object.keys(DATA_SOURCES)) dsSelect.appendChild(new Option(k,k));
+        dsSelect.value = rule?.dataSource || dsSelect.options[0].value;
+        dsDiv.appendChild(createLabel('Data Source', dsSelect));
+        row.appendChild(dsDiv);
+
+        // Field select
+        const fDiv = document.createElement('div'); fDiv.style.flex='1';
+        const fSelect = document.createElement('select'); fSelect.className='form-select form-select-sm';
+        fDiv.appendChild(createLabel('Field', fSelect));
+        row.appendChild(fDiv);
+
+        // Operator select
+        const oDiv = document.createElement('div'); oDiv.style.flex='1';
+        const oSelect = document.createElement('select'); oSelect.className='form-select form-select-sm';
+        for (const op of OPERATORS) oSelect.appendChild(new Option(op,op));
+        oSelect.value = rule?.operator || OPERATORS[0];
+        oDiv.appendChild(createLabel('Operator', oSelect));
+        row.appendChild(oDiv);
+
+        // Value input
+        const vDiv = document.createElement('div'); vDiv.style.flex='0.8';
+        const vInput = document.createElement('input'); vInput.className='form-control form-control-sm'; vInput.value = rule?.value ?? '';
+        vDiv.appendChild(createLabel('Value', vInput));
+        row.appendChild(vDiv);
+
+        wrapper.appendChild(row);
+
+        // when datasource changes, update fields
+        function populateFields() {
+          const ds = dsSelect.value;
+          fSelect.innerHTML = '';
+          (DATA_SOURCES[ds] || []).forEach(f => fSelect.appendChild(new Option(f,f)));
+          if (rule?.field) fSelect.value = rule.field;
+        }
+        dsSelect.addEventListener('change', populateFields);
+        populateFields();
+
+        // remove handler
+        wrapper.querySelector('.remove-rule').addEventListener('click', () => {
+          wrapper.remove();
+          saveRulesToDraft();
+          refreshRuleTitles();
+        });
+
+        // store element references for saving
+        wrapper._controls = { dsSelect, fSelect, oSelect, vInput };
+        // on change save
+        [dsSelect,fSelect,oSelect,vInput].forEach(el => el.addEventListener('change', saveRulesToDraft));
+
+        return wrapper;
+      }
+
+      function createLabel(text, control) {
+        const div = document.createElement('div');
+        const label = document.createElement('label'); label.className='form-label small'; label.textContent = text;
+        div.appendChild(label);
+        div.appendChild(control);
+        return div;
+      }
+
+      function refreshRuleTitles(){
+        document.querySelectorAll('#rulesContainer .rule-card').forEach((el,i)=>{
+          const strong = el.querySelector('strong'); if (strong) strong.textContent = 'Rule ' + (i+1);
+        });
+      }
+
+      function saveRulesToDraft(){
+        const rules = [];
+        document.querySelectorAll('#rulesContainer .rule-card').forEach(el=>{
+          const c = el._controls;
+          rules.push({ dataSource: c.dsSelect.value, field: c.fSelect.value, operator: c.oSelect.value, value: c.vInput.value });
+        });
+        const draft = JSON.parse(localStorage.getItem('groundUpdateDraft') || '{}');
+        draft.rules = rules;
+        draft.freq = document.getElementById('freqSelect').value;
+        draft.freqTime = document.getElementById('freqTime').value;
+        localStorage.setItem('groundUpdateDraft', JSON.stringify(draft));
+      }
+
+      function loadRulesFromDraft(){
+        const draft = JSON.parse(localStorage.getItem('groundUpdateDraft') || 'null');
+        const rules = (draft && draft.rules && draft.rules.length) ? draft.rules : [
+          { dataSource: 'Tubewells Data', field: 'Water Quality EC', operator: 'Greater than', value: '3.0' },
+          { dataSource: 'Piezometer Data', field: 'Water Depth', operator: 'Less than', value: '30' }
+        ];
+        const container = document.getElementById('rulesContainer'); container.innerHTML = '';
+        rules.forEach((r,i)=> container.appendChild(createRuleNode(r,i)));
+        // set freq
+        if (draft && draft.freq) document.getElementById('freqSelect').value = draft.freq;
+        if (draft && draft.freqTime) document.getElementById('freqTime').value = draft.freqTime;
+        refreshRuleTitles();
+      }
+
+      document.getElementById('addRule').addEventListener('click', (e)=>{
+        e.preventDefault();
+        const container = document.getElementById('rulesContainer');
+        const idx = container.children.length;
+        container.appendChild(createRuleNode(null, idx));
+        saveRulesToDraft();
+        refreshRuleTitles();
+      });
+
+      document.getElementById('conditionsNext').addEventListener('click', ()=>{
+        // save and proceed to Message step
+        saveRulesToDraft();
+        window.location.href = 'ground-update-message.html';
+      });
+
+      // load on open
+      loadRulesFromDraft();
+    </script>
+  </body>
+</html>

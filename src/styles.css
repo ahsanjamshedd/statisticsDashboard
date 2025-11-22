@@ -1,0 +1,64 @@
+:root{
+  --card-shadow: 0 8px 20px rgba(17,24,39,0.06);
+  --accent: #2b6ef6;
+  --page-scale: 1;
+}
+body{
+  background: linear-gradient(180deg, #f6f8fb 0%, #f3f6f9 100%);
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+  color: #09304a;
+}
+
+.modern-nav{height:56px;box-shadow:0 2px 10px rgba(11,20,40,0.06);}
+.modern-nav .brand-mark{width:36px;height:36px;border-radius:8px;display:inline-flex}
+.modern-nav .brand-text{font-weight:600;color:#ffffff}
+.modern-actions .avatar{background:#ffffff22;color:#fff;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,0.12)}
+
+.stat-card{border:0;border-radius:14px;box-shadow:0 6px 24px rgba(13,20,30,0.06);background: linear-gradient(180deg, #ffffff, #fbfdff);padding:1rem}
+.stat-card .h2{font-size:1.4rem;font-weight:700;color:#0b2a4a}
+.stat-card .small{color:#6b7a86}
+.stat-icon{width:52px;height:52px;display:flex;align-items:center;justify-content:center}
+
+.card{border-radius:12px}
+.table-responsive{margin-top:12px}
+tbody tr{background:transparent}
+tbody tr td{vertical-align:middle;padding:.6rem}
+.badge-type{font-size:0.75rem;padding:6px 10px;border-radius:999px}
+.type-time{background:#eef7ff;color:#2b6ef6}
+.type-rec{background:#f6eefc;color:#7b2bdc}
+.type-cond{background:#fff6ea;color:#e07b29}
+.status-active{background:#eafaf0;color:#14924a;padding:6px 10px;border-radius:999px}
+.status-paused{background:#fff4e6;color:#d9762f;padding:6px 10px;border-radius:999px}
+
+/* small layout tweaks */
+main h2{font-weight:700;color:#102231;margin-bottom:.8rem}
+
+/* chart card tweaks */
+.chart-card{box-shadow:var(--card-shadow);border-radius:12px;padding:0.9rem;background:#fff}
+.chart-card canvas{max-width:100%}
+
+/* scale wrapper — allows increasing UI size when browser/device DPI is low */
+.scale-wrap{
+  transform-origin: top center;
+  transform: scale(var(--page-scale));
+  width: 100%;
+}
+
+/* center and ensure there's enough space when scaled */
+body{min-height:100vh}
+.container{transition: transform .12s ease}
+
+/* tweaks for Impact Trends area */
+.chart-card h6{font-weight:600;color:#102231;margin-bottom:.3rem}
+.table-responsive small.table td, .table-responsive small.table th{padding:0.35rem}
+.stat-card .h2{font-size:1.4rem}
+
+/* modern buttons */
+.btn-primary{background:linear-gradient(90deg,#2b6ef6,#7b2bdc);border:0}
+.btn-outline-secondary{border-color:#e6e9ee;color:#334155}
+
+/* hover effects */
+.card:hover{transform:translateY(-4px);transition:transform .18s ease}
+
+
+

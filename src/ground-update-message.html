@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Configure Message — Ground Update</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .panel{background:#fff;border-radius:10px;padding:14px;border:1px solid #eef2f7}
+      .vars {display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.5rem}
+      .var-badge{background:#eef6ff;border-radius:999px;padding:.25rem .6rem;font-size:.85rem;color:#0b59d7}
+      .sms-count{font-size:.85rem;color:#16a34a}
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-dark bg-primary px-3 modern-nav">
+      <div class="d-flex align-items-center container-fluid">
+        <div class="brand d-flex align-items-center me-3">
+          <div class="brand-mark d-flex align-items-center justify-content-center">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="0" y="0" width="24" height="24" rx="5" fill="url(#g)"/>
+              <defs>
+                <linearGradient id="g" x1="0" x2="1">
+                  <stop offset="0" stop-color="#2b6ef6"/>
+                  <stop offset="1" stop-color="#7b2bdc"/>
+                </linearGradient>
+              </defs>
+            </svg>
+          </div>
+          <span class="brand-text ms-2">IWMI Outreach System</span>
+        </div>
+        <div class="nav-spacer"></div>
+        <div class="d-flex align-items-center text-white modern-actions">
+          <a class="btn btn-link text-white p-0 me-3" href="ground-update-conditions.html">Back</a>
+          <div class="avatar">JD</div>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container my-4">
+      <div id="pageDebug" class="alert alert-info" role="status" style="margin-bottom:1rem">Loading page...</div>
+      <h4 class="mb-3">Configure Message</h4>
+
+      <div class="panel mb-3">
+        <div class="d-flex gap-2 align-items-center mb-3">
+          <select id="templateSelect" class="form-select">
+            <option value="">Select Template</option>
+            <option value="water_alert">Water Alert</option>
+            <option value="reminder">Reminder</option>
+          </select>
+          <button id="createTemplate" class="btn btn-outline-primary">+ Create New</button>
+        </div>
+
+        <div class="mb-3">
+          <strong><i class="bi bi-telephone-fill me-1"></i> Voice Call Message</strong>
+          <div class="mt-2">
+            <label class="form-label small">Language</label>
+            <div class="d-flex gap-3 mb-2">
+              <label class="form-check-label"><input type="radio" name="voiceLang" value="en" checked class="form-check-input me-1">English</label>
+              <label class="form-check-label"><input type="radio" name="voiceLang" value="si" class="form-check-input me-1">Sinhala</label>
+            </div>
+
+            <label class="form-label small">Message Type</label>
+            <div class="d-flex gap-3 mb-2">
+              <label class="form-check-label"><input type="radio" name="voiceType" value="tts" class="form-check-input me-1">Text-to-Speech</label>
+              <label class="form-check-label"><input type="radio" name="voiceType" value="audio" checked class="form-check-input me-1">Pre-recorded Audio</label>
+            </div>
+
+            <div class="d-flex gap-2 align-items-center">
+              <input id="audioFile" class="form-control form-control-sm" placeholder="No file selected" readonly />
+              <input id="audioUpload" type="file" accept="audio/*" style="display:none" />
+              <button id="uploadAudio" class="btn btn-sm btn-outline-secondary">Upload New</button>
+              <button id="previewAudio" class="btn btn-sm btn-secondary">Preview</button>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <strong><i class="bi bi-chat-dots me-1"></i> SMS Message</strong>
+          <div class="mt-2">
+            <textarea id="smsText" class="form-control" rows="6" placeholder="Enter SMS message (use variables below)"></textarea>
+            <div class="d-flex align-items-center justify-content-between mt-2">
+              <div class="vars" id="varsContainer">
+                <!-- variable badges inserted here -->
+              </div>
+              <div class="sms-count" id="smsCount">0/160</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex justify-content-between">
+        <a href="ground-update-conditions.html" class="btn btn-outline-secondary">← Previous</a>
+        <button id="messageNext" type="button" class="btn btn-primary" onclick="(function(){ try{ localStorage.setItem('__navTest','1'); location.href='ground-update-schedule.html'; }catch(e){ console.error(e); } })();">Next: Schedule →</button>
+      </div>
+    </main>
+
+    <script>
+      (function(){
+        try{
+          console.log('ground-update-message script loaded');
+          document.addEventListener('DOMContentLoaded', ()=>{
+            const debugEl = document.getElementById('pageDebug');
+            if (debugEl) debugEl.textContent = 'Page loaded';
+
+            const VARS = ['{farmer_name}','{district}','{tehsil}','{ec_value}','{water_depth}','{discharge_rate}'];
+            const varsContainer = document.getElementById('varsContainer');
+            if (!varsContainer) console.warn('varsContainer not found');
+
+            VARS.forEach(v => {
+              const b = document.createElement('button');
+              b.type = 'button';
+              b.className = 'var-badge';
+              b.textContent = v;
+              b.addEventListener('click', () => {
+                const ta = document.getElementById('smsText');
+                if (!ta) return console.warn('smsText textarea missing');
+                const pos = ta.selectionStart || ta.value.length;
+                ta.setRangeText(v, pos, pos, 'end');
+                updateCount();
+              });
+              if (varsContainer) varsContainer.appendChild(b);
+            });
+
+            function updateCount() {
+              const ta = document.getElementById('smsText');
+              if (!ta) return;
+              const v = ta.value || '';
+              const len = v.length;
+              const el = document.getElementById('smsCount');
+              if (!el) return;
+              el.textContent = len + '/160';
+              el.style.color = len > 160 ? '#ef4444' : '#16a34a';
+            }
+            const smsEl = document.getElementById('smsText');
+            if (smsEl) smsEl.addEventListener('input', updateCount);
+
+            const uploadBtn = document.getElementById('uploadAudio');
+            const audioUpload = document.getElementById('audioUpload');
+            const previewBtn = document.getElementById('previewAudio');
+            if (uploadBtn) uploadBtn.addEventListener('click', () => audioUpload?.click());
+            if (audioUpload) audioUpload.addEventListener('change', (e) => {
+              const f = e.target.files && e.target.files[0];
+              if (f) document.getElementById('audioFile').value = f.name;
+            });
+            if (previewBtn) previewBtn.addEventListener('click', () => alert('Preview not implemented in prototype'));
+
+            function loadMessageDraft() {
+              try{
+                const draft = JSON.parse(localStorage.getItem('groundUpdateDraft') || 'null');
+                if (!draft) return;
+                if (draft.message) {
+                  const m = draft.message;
+                  if (m.template) document.getElementById('templateSelect').value = m.template;
+                  if (m.voiceLang) document.querySelector(`input[name="voiceLang"][value="${m.voiceLang}"]`)?.checked = true;
+                  if (m.voiceType) document.querySelector(`input[name="voiceType"][value="${m.voiceType}"]`)?.checked = true;
+                  if (m.audioFile) document.getElementById('audioFile').value = m.audioFile;
+                  if (m.smsText) document.getElementById('smsText').value = m.smsText;
+                }
+                updateCount();
+              }catch(err){
+                console.error('Error loading draft:', err);
+              }
+            }
+
+            function saveMessageDraft() {
+              try{
+                const draft = JSON.parse(localStorage.getItem('groundUpdateDraft') || '{}');
+                draft.message = {
+                  template: document.getElementById('templateSelect')?.value || '',
+                  voiceLang: document.querySelector('input[name="voiceLang"]:checked')?.value || '',
+                  voiceType: document.querySelector('input[name="voiceType"]:checked')?.value || '',
+                  audioFile: document.getElementById('audioFile')?.value || '',
+                  smsText: document.getElementById('smsText')?.value || ''
+                };
+                localStorage.setItem('groundUpdateDraft', JSON.stringify(draft));
+              }catch(err){
+                console.error('Error saving draft:', err);
+                throw err;
+              }
+            }
+
+            const nextBtn = document.getElementById('messageNext');
+            if (!nextBtn) {
+              console.error('messageNext button not found; cannot attach navigation handler');
+              return;
+            }
+
+            nextBtn.addEventListener('click', (event) => {
+              event.preventDefault();
+              try{
+                console.log('messageNext clicked - saving draft...');
+                saveMessageDraft();
+                console.log('Draft after save:', JSON.parse(localStorage.getItem('groundUpdateDraft') || 'null'));
+              }catch(err){
+                console.error('Error saving draft before navigation:', err);
+              }
+
+              // Try relative navigation first
+              try{
+                window.location.assign('ground-update-schedule.html');
+                setTimeout(()=>{
+                  if (window.location.pathname.indexOf('ground-update-schedule.html') === -1) {
+                    window.location.href = 'ground-update-schedule.html';
+                  }
+                }, 200);
+              }catch(err){
+                console.error('Navigation failed, falling back to href/open:', err);
+                try{ window.location.href = 'ground-update-schedule.html'; }catch(e){ window.open('ground-update-schedule.html','_self'); }
+              }
+            });
+
+            loadMessageDraft();
+          });
+        }catch(e){
+          console.error('Unhandled error in ground-update-message script', e);
+        }
+      })();
+    </script>
+  </body>
+</html>

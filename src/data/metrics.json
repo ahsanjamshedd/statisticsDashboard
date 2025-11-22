@@ -1,0 +1,14 @@
+{
+  "labels": ["2025-08-25","2025-09-24","2025-10-24","2025-11-22"],
+  "engagement": [1.2, 3.8, 2.9, 4.1],
+  "topSegments": [
+    {"name":"Irrigation Schedule","rate":82},
+    {"name":"Paddy Farmers","rate":72},
+    {"name":"Pest Alert","rate":55},
+    {"name":"Water Allocation","rate":91},
+    {"name":"Caddy Farmers","rate":64}
+  ],
+  "farmerReadRate": 78.5,
+  "activeSegments": 45,
+  "updatesSent": 8701
+}

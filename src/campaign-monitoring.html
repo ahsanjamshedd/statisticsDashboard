@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Campaign Monitoring Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .panel{background:#fff;border-radius:10px;padding:16px;border:1px solid #eef2f7}
+      .summary-numbers {display:flex;gap:2rem;align-items:center}
+      .summary-numbers .num {font-size:1.6rem;font-weight:700}
+      .live-feed-item{border-radius:6px;padding:.75rem;background:#f8fafc;border:1px solid #eef2f7;margin-bottom:.5rem}
+      .live-feed-item.failed{background:#fff1f2;border-color:#fee2e2}
+      .live-feed-item.calling{background:#eef2ff;border-color:#dbeafe}
+      .small-muted{font-size:.85rem;color:#6b7280}
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-dark bg-primary px-3 modern-nav">
+      <div class="d-flex align-items-center container-fluid">
+        <div class="brand d-flex align-items-center me-3">
+          <div class="brand-mark d-flex align-items-center justify-content-center">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="0" y="0" width="24" height="24" rx="5" fill="url(#g)"/><defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#2b6ef6"/><stop offset="1" stop-color="#7b2bdc"/></linearGradient></defs></svg>
+          </div>
+          <a class="navbar-brand ms-2 text-white" href="index.html">Campaign Monitoring</a>
+        </div>
+        <div class="nav-spacer"></div>
+        <div class="d-flex align-items-center text-white modern-actions">
+          <a class="btn btn-link text-white p-0 me-3" href="index.html">Dashboard</a>
+          <div class="avatar">JD</div>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container my-4">
+      <h3 class="mb-3">Campaign Monitoring Dashboard</h3>
+
+      <div class="panel mb-4">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <h5 class="mb-1">Water Quality Alert - Lahore District</h5>
+            <div class="small-muted">Active &middot; Started: 2025-01-15 10:00 AM</div>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-warning">⏸ Pause</button>
+            <button class="btn btn-danger">Stop</button>
+            <button class="btn btn-primary">Export Report</button>
+          </div>
+        </div>
+
+        <div class="mt-4" style="background:#f1f6ff;padding:18px;border-radius:8px">
+          <div class="small-muted mb-2">Progress Overview</div>
+          <div class="progress" style="height:14px">
+            <div class="progress-bar bg-primary" role="progressbar" style="width:68%"></div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mt-3 summary-numbers">
+            <div class="text-center">
+              <div class="num text-success">2,089</div>
+              <div class="small-muted">Completed (60.5%)</div>
+            </div>
+            <div class="text-center">
+              <div class="num text-primary">252</div>
+              <div class="small-muted">In Progress (7.3%)</div>
+            </div>
+            <div class="text-center">
+              <div class="num text-warning">1,115</div>
+              <div class="small-muted">Queued (32.3%)</div>
+            </div>
+            <div class="text-center">
+              <div class="num text-danger">147</div>
+              <div class="small-muted">Failed (4.3%)</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel mb-4">
+        <h6 class="mb-3">Live Feed</h6>
+        <div id="liveFeed">
+          <div class="live-feed-item"><i class="bi bi-check-circle-fill text-success me-2"></i>Call completed <strong>+92300XXXXXXX</strong> <span class="float-end small-muted">10:45:23 &middot; Duration: 2:15</span></div>
+          <div class="live-feed-item calling"><i class="bi bi-telephone-fill text-primary me-2"></i>Calling <strong>+92321XXXXXXX</strong> <span class="float-end small-muted">10:45:20</span></div>
+          <div class="live-feed-item failed"><i class="bi bi-x-circle-fill text-danger me-2"></i>No answer <strong>+92333XXXXXXX</strong> <span class="float-end small-muted">10:45:18</span></div>
+          <div class="live-feed-item"><i class="bi bi-chat-dots-fill text-success me-2"></i>SMS delivered <strong>+92345XXXXX</strong> <span class="float-end small-muted">10:45:15</span></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h6 class="mb-3">Recent Reports</h6>
+        <div class="small-muted">No recent report exports</div>
+      </div>
+    </main>
+
+    <script>
+      // simple sample animation: add a new feed item every 8s (demo only)
+      (function(){
+        const feed = document.getElementById('liveFeed');
+        if (!feed) return;
+        const samples = [
+          {cls:'', txt:'SMS delivered +92399XXXXX', when:'10:46:00'},
+          {cls:'calling', txt:'Calling +92311XXXXX', when:'10:46:08'},
+          {cls:'failed', txt:'No answer +92355XXXXX', when:'10:46:16'}
+        ];
+        let i=0;
+        setInterval(()=>{
+          const s = samples[i++ % samples.length];
+          const div = document.createElement('div');
+          div.className = 'live-feed-item ' + s.cls;
+          div.innerHTML = s.txt + ' <span class="float-end small-muted">' + s.when + '</span>';
+          feed.insertBefore(div, feed.firstChild);
+          // keep only last 8 entries
+          while(feed.children.length>8) feed.removeChild(feed.lastChild);
+        },8000);
+      })();
+    </script>
+  </body>
+</html>
