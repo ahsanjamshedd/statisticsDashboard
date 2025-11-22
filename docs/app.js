@@ -179,11 +179,11 @@ function addRandomData(metrics) {
       labels,
       engagement: labels.map(() => +(randomBetween(1,4)).toFixed(1)),
       topSegments: [
-        { name: 'Irrigation Schedule', rate: Math.round(randomBetween(60,92)) },
+        { name: 'Irrigation Updates', rate: Math.round(randomBetween(60,92)) },
         { name: 'Paddy Farmers', rate: Math.round(randomBetween(50,85)) },
-        { name: 'Pest Alert', rate: Math.round(randomBetween(30,75)) },
+        { name: 'Pest Alerts', rate: Math.round(randomBetween(30,75)) },
         { name: 'Water Allocation', rate: Math.round(randomBetween(55,95)) },
-        { name: 'Caddy Farmers', rate: Math.round(randomBetween(40,78)) }
+        { name: 'Market Prices', rate: Math.round(randomBetween(40,78)) }
       ],
       farmerReadRate: +(randomBetween(60,92)).toFixed(1),
       activeSegments: Math.round(randomBetween(20,65)),
