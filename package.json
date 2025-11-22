@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "lite-server --baseDir=src"
+    "start": "lite-server --baseDir=docs"
   },
   "devDependencies": {
     "lite-server": "^2.6.1"

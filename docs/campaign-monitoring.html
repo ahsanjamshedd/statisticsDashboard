@@ -81,10 +81,10 @@
       <div class="panel mb-4">
         <h6 class="mb-3">Live Feed</h6>
         <div id="liveFeed">
-          <div class="live-feed-item"><i class="bi bi-check-circle-fill text-success me-2"></i>Call completed <strong>+92300XXXXXXX</strong> <span class="float-end small-muted">10:45:23 &middot; Duration: 2:15</span></div>
-          <div class="live-feed-item calling"><i class="bi bi-telephone-fill text-primary me-2"></i>Calling <strong>+92321XXXXXXX</strong> <span class="float-end small-muted">10:45:20</span></div>
-          <div class="live-feed-item failed"><i class="bi bi-x-circle-fill text-danger me-2"></i>No answer <strong>+92333XXXXXXX</strong> <span class="float-end small-muted">10:45:18</span></div>
-          <div class="live-feed-item"><i class="bi bi-chat-dots-fill text-success me-2"></i>SMS delivered <strong>+92345XXXXX</strong> <span class="float-end small-muted">10:45:15</span></div>
+          <div class="live-feed-item"><i class="bi bi-check-circle-fill text-success me-2"></i>Message sent <strong>+92300XXXXXXX</strong> <span class="float-end small-muted">10:45:23</span></div>
+          <div class="live-feed-item calling"><i class="bi bi-send-check-fill text-primary me-2"></i>Sending <strong>+92321XXXXXXX</strong> <span class="float-end small-muted">10:45:20</span></div>
+          <div class="live-feed-item failed"><i class="bi bi-exclamation-circle-fill text-danger me-2"></i>Delivery failed <strong>+92333XXXXXXX</strong> <span class="float-end small-muted">10:45:18</span></div>
+          <div class="live-feed-item"><i class="bi bi-chat-dots-fill text-success me-2"></i>Message delivered <strong>+92345XXXXX</strong> <span class="float-end small-muted">10:45:15</span></div>
         </div>
       </div>
 
@@ -100,9 +100,9 @@
         const feed = document.getElementById('liveFeed');
         if (!feed) return;
         const samples = [
-          {cls:'', txt:'SMS delivered +92399XXXXX', when:'10:46:00'},
-          {cls:'calling', txt:'Calling +92311XXXXX', when:'10:46:08'},
-          {cls:'failed', txt:'No answer +92355XXXXX', when:'10:46:16'}
+          {cls:'', txt:'Message delivered +92399XXXXX', when:'10:46:00'},
+          {cls:'calling', txt:'Sending +92311XXXXX', when:'10:46:08'},
+          {cls:'failed', txt:'Delivery failed +92355XXXXX', when:'10:46:16'}
         ];
         let i=0;
         setInterval(()=>{
