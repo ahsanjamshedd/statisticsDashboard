@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Location Selection — Ground Update</title>
+    <title>Location Selection — Message Campaign</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -39,12 +39,32 @@
           <div id="map"></div>
         </div>
         <div class="col-lg-4 map-panel">
-          <p class="selection-info">Draw a polygon, rectangle or circle on the map to select the target area. Use the draw toolbar on the top-left of the map.</p>
+          <p class="selection-info">Draw a polygon, rectangle or circle on the map to select the target area. Or load a district boundary from the selector below.</p>
+          <div class="mb-3">
+            <label class="form-label">Load district boundary</label>
+            <select id="districtSelect" class="form-select">
+              <option value="">-- (Draw selection or choose district) --</option>
+              <option value="data/districts/pakistan.json">Pakistan (national)</option>
+              <option value="data/districts/azad-kashmir.json">Azad Kashmir</option>
+              <option value="data/districts/balochistan.json">Balochistan</option>
+              <option value="data/districts/fata.json">FATA</option>
+              <option value="data/districts/federal-capital territory.json">Federal Capital Territory</option>
+              <option value="data/districts/gilgit-baltistan.json">Gilgit-Baltistan</option>
+              <option value="data/districts/indian-occupied kashmir.json">Indian-Occupied Kashmir</option>
+              <option value="data/districts/khyber-pakhtunkhwa.json">Khyber-Pakhtunkhwa</option>
+              <option value="data/districts/punjab.json">Punjab</option>
+              <option value="data/districts/sindh.json">Sindh</option>
+            </select>
+            <div class="form-text">Selecting a district will load its GeoJSON and fit the map to the boundary.</div>
+          </div>
           <div class="mb-2"><strong>Selected geometry:</strong></div>
           <pre id="geoJson" style="height:220px;overflow:auto;background:#f8fafc;padding:.6rem;border-radius:6px;border:1px solid #eef2f7">(none)</pre>
           <div class="d-flex justify-content-between mt-3">
             <button id="locCancel" class="btn btn-outline-secondary">Cancel</button>
-            <button id="locNext" class="btn btn-primary">Next: Audience &rarr;</button>
+            <div>
+              <button id="clearSelection" class="btn btn-light me-2">Clear</button>
+              <button id="locNext" class="btn btn-primary">Next: Audience &rarr;</button>
+            </div>
           </div>
         </div>
       </div>
@@ -55,7 +75,7 @@
     <script src="https://cdn.jsdelivr.net/npm/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
     <script>
       // initialize map
-      const map = L.map('map').setView([6.9271, 79.8612], 7); // center on Sri Lanka by default
+      const map = L.map('map').setView([30.3753, 69.3451], 5); // center on Pakistan by default
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '&copy; OpenStreetMap contributors'
@@ -64,6 +84,9 @@
       // feature group to store drawn items
       const drawnItems = new L.FeatureGroup();
       map.addLayer(drawnItems);
+
+      // layer to hold loaded district boundaries
+      const districtLayer = L.geoJSON(null, { style: { color: '#2b6ef6', weight: 2, fillOpacity: 0.08 } }).addTo(map);
 
       // draw control
       const drawControl = new L.Control.Draw({
@@ -79,18 +102,26 @@
       map.addControl(drawControl);
 
       function updateGeoJsonDisplay(layer) {
-        if (!layer) { document.getElementById('geoJson').textContent = '(none)'; return; }
+        if (!layer) {
+          document.getElementById('geoJson').textContent = '(none)';
+          // remove geometry from draft
+          try { const draft = JSON.parse(localStorage.getItem('messageCampaignDraft') || '{}'); delete draft.geometry; localStorage.setItem('messageCampaignDraft', JSON.stringify(draft)); } catch(e){}
+          return;
+        }
         let geo = layer.toGeoJSON();
         document.getElementById('geoJson').textContent = JSON.stringify(geo.geometry, null, 2);
-        // persist to localStorage with the rest of draft
-        const draft = JSON.parse(localStorage.getItem('groundUpdateDraft') || '{}');
-        draft.geometry = geo.geometry;
-        localStorage.setItem('groundUpdateDraft', JSON.stringify(draft));
+        // persist to localStorage with the rest of draft (message-centric key)
+        try {
+          const draft = JSON.parse(localStorage.getItem('messageCampaignDraft') || '{}');
+          draft.geometry = geo.geometry;
+          localStorage.setItem('messageCampaignDraft', JSON.stringify(draft));
+        } catch(e) { console.warn('Could not save draft geometry', e); }
       }
 
       map.on(L.Draw.Event.CREATED, function (e) {
         const layer = e.layer;
         // clear previous selection (for simplicity keep a single selection)
+        districtLayer.clearLayers();
         drawnItems.clearLayers();
         drawnItems.addLayer(layer);
         updateGeoJsonDisplay(layer);
@@ -105,20 +136,60 @@
         updateGeoJsonDisplay(null);
       });
 
-      // Load draft geometry if present
-      const draft = JSON.parse(localStorage.getItem('groundUpdateDraft') || 'null');
-      if (draft && draft.geometry) {
-        const layer = L.geoJSON(draft.geometry);
-        layer.eachLayer(l => { drawnItems.addLayer(l); map.fitBounds(l.getBounds()); updateGeoJsonDisplay(l); });
-      }
+      // Load draft geometry if present (message-centric key)
+      try {
+        const draft = JSON.parse(localStorage.getItem('messageCampaignDraft') || 'null');
+        if (draft && draft.geometry) {
+          const layer = L.geoJSON(draft.geometry);
+          layer.eachLayer(l => { drawnItems.addLayer(l); map.fitBounds(l.getBounds()); updateGeoJsonDisplay(l); });
+        }
+        // If draft has a saved district source, try to load it
+        if (draft && draft.districtSource) {
+          loadDistrictGeoJSON(draft.districtSource);
+          // set select value if present
+          const sel = document.getElementById('districtSelect'); if (sel) sel.value = draft.districtSource;
+        }
+      } catch(e){ /* ignore */ }
 
       document.getElementById('locCancel').addEventListener('click', () => {
         window.location.href = 'ground-update.html';
       });
 
+      document.getElementById('clearSelection').addEventListener('click', () => {
+        drawnItems.clearLayers(); districtLayer.clearLayers(); updateGeoJsonDisplay(null);
+      });
+
+      // district selector: fetch and load a GeoJSON file
+      document.getElementById('districtSelect').addEventListener('change', (ev) => {
+        const src = ev.target.value;
+        if (!src) return;
+        loadDistrictGeoJSON(src);
+        // persist chosen district into draft
+        try { const draft = JSON.parse(localStorage.getItem('messageCampaignDraft') || '{}'); draft.districtSource = src; localStorage.setItem('messageCampaignDraft', JSON.stringify(draft)); } catch(e){}
+      });
+
+      async function loadDistrictGeoJSON(src) {
+        try {
+          const res = await fetch(src, {cache: 'no-store'});
+          if (!res.ok) throw new Error('Failed to load ' + src);
+          const data = await res.json();
+          districtLayer.clearLayers(); drawnItems.clearLayers();
+          districtLayer.addData(data);
+          // if the GeoJSON contains features, fit to bounds and persist geometry of the first feature
+          const firstFeature = (Array.isArray(data.features) && data.features[0]) ? data.features[0] : null;
+          if (firstFeature) {
+            const layer = L.geoJSON(firstFeature.geometry);
+            layer.eachLayer(l => { map.fitBounds(l.getBounds()); updateGeoJsonDisplay(l); });
+          }
+        } catch (err) {
+          console.warn('Could not load district GeoJSON', err);
+          alert('Could not load district file: ' + err.message);
+        }
+      }
+
       document.getElementById('locNext').addEventListener('click', () => {
         // Ensure a geometry exists
-        const currentDraft = JSON.parse(localStorage.getItem('groundUpdateDraft') || '{}');
+        const currentDraft = JSON.parse(localStorage.getItem('messageCampaignDraft') || '{}');
         if (!currentDraft.geometry) {
           if (!confirm('No location selected. Continue without a spatial selection?')) return;
         }
