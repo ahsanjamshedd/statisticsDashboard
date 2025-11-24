@@ -1,7 +1,7 @@
 const sampleTemplates = [
-  { name: 'Campaign 1', type: 'Time-time', typeClass: 'type-time', status: 'Active', statusClass: 'status-active', recipients: '15,890' },
-  { name: 'Campaign 2', type: 'Recepting', typeClass: 'type-rec', status: 'Paused', statusClass: 'status-paused', recipients: '9,210' },
-  { name: 'Campaign 3', type: 'Conditional', typeClass: 'type-cond', status: 'Paused', statusClass: 'status-paused', recipients: '1' },
+  { name: 'Campaign 1', type: 'Time-time', typeClass: 'type-time', status: 'Active', statusClass: 'status-active', recipients: '135,890', opened: '132,500' },
+  { name: 'Campaign 2', type: 'Recepting', typeClass: 'type-rec', status: 'Paused', statusClass: 'status-paused', recipients: '139,210', opened: '134,200' },
+  { name: 'Campaign 3', type: 'Conditional', typeClass: 'type-cond', status: 'Paused', statusClass: 'status-paused', recipients: '138,100', opened: '138,100' },
 ];
 
 let messagesChart = null;
@@ -278,8 +278,8 @@ function addRandomData(metrics) {
         { name: 'Market Prices', rate: Math.round(randomBetween(40,78)) }
       ],
       farmerReadRate: +(randomBetween(60,92)).toFixed(1),
-      activeSegments: Math.round(randomBetween(20,65)),
-      updatesSent: Math.round(randomBetween(1200,9800))
+      activeSegments: Math.round(randomBetween(130000,150000)),
+      updatesSent: Math.round(randomBetween(130000,180000))
     };
     return metrics;
   }
@@ -314,8 +314,8 @@ function addRandomData(metrics) {
 
   // Adjust top-level numbers slightly
   metrics.farmerReadRate = +( (parseFloat(metrics.farmerReadRate) || randomBetween(50,85)) + randomBetween(-2,2) ).toFixed(1);
-  metrics.activeSegments = Math.round((parseInt(metrics.activeSegments) || 20) + randomBetween(-3,6));
-  metrics.updatesSent = Math.round((parseInt(metrics.updatesSent) || 1000) + randomBetween(-200,800));
+  metrics.activeSegments = Math.round((parseInt(metrics.activeSegments) || 130000) + randomBetween(-300,600));
+  metrics.updatesSent = Math.round((parseInt(metrics.updatesSent) || 130000) + randomBetween(-200,800));
 
   return metrics;
 }
