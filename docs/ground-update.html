@@ -29,10 +29,10 @@
           <div>
             <strong>Create New Message Campaign</strong>
             <div class="progress mt-2" style="height:8px">
-              <div class="progress-bar bg-primary" role="progressbar" style="width:20%"></div>
+              <div class="progress-bar" role="progressbar" style="width:20%;background:#2a537c;"></div>
             </div>
           </div>
-          <div class="text-muted">Step <span class="badge bg-primary">1/5</span></div>
+          <div class="text-muted">Step <span class="badge" style="background:#2a537c;color:#fff;">1/5</span></div>
         </div>
 
         <form id="wizardForm">
@@ -49,13 +49,19 @@
           <div class="mb-3">
             <label class="form-label">Campaign Type</label>
             <div class="list-group">
-              <label class="list-group-item">
+              <label class="list-group-item" style="border-color:#2a537c;">
                 <input class="form-check-input me-2" type="radio" name="type" value="one-time"> One-time
               </label>
-              <label class="list-group-item active">
-                <input class="form-check-input me-2" type="radio" name="type" value="recurring" checked> Recurring
+              <label class="list-group-item active" style="background:#eaf1fa;color:#2a537c;border-color:#2a537c;">
+                <input class="form-check-input me-2 custom-radio" type="radio" name="type" value="recurring" checked> Recurring
+                  <style>
+                    .custom-radio:checked {
+                      background-color: #2a537c !important;
+                      border-color: #2a537c !important;
+                    }
+                  </style>
               </label>
-              <label class="list-group-item">
+              <label class="list-group-item" style="border-color:#2a537c;">
                 <input class="form-check-input me-2" type="radio" name="type" value="conditional"> Conditional (Rule-based)
               </label>
             </div>
@@ -73,7 +79,7 @@
 
           <div class="d-flex justify-content-between align-items-center">
             <a href="index.html" class="text-muted">Cancel</a>
-            <button type="button" id="wizardNext" class="btn btn-primary">Next: Location &rarr;</button>
+            <button type="button" id="wizardNext" class="btn" style="background:#2a537c;color:#fff;">Next: Location &rarr;</button>
           </div>
         </form>
       </div>

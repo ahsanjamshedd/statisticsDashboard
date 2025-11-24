@@ -34,11 +34,11 @@
           <div id="map"></div>
         </div>
         <div class="col-lg-4 map-panel">
-          <p class="selection-info">Draw a polygon, rectangle or circle on the map to select the target area. Or load a district boundary from the selector below.</p>
+          <p class="selection-info">Draw a polygon, rectangle or circle on the map to select the target area. Or load a province boundary from the selector below.</p>
           <div class="mb-3">
-            <label class="form-label">Load district boundary</label>
-            <select id="districtSelect" class="form-select">
-              <option value="">-- (Draw selection or choose district) --</option>
+            <label class="form-label">Load province boundary</label>
+            <select id="provinceSelect" class="form-select mb-2">
+              <option value="">-- (Draw selection or choose province) --</option>
               <option value="data/districts/pakistan.json">Pakistan (national)</option>
               <option value="data/districts/azad-kashmir.json">Azad Kashmir</option>
               <option value="data/districts/balochistan.json">Balochistan</option>
@@ -50,10 +50,13 @@
               <option value="data/districts/punjab.json">Punjab</option>
               <option value="data/districts/sindh.json">Sindh</option>
             </select>
-            <div class="form-text">Selecting a district will load its GeoJSON and fit the map to the boundary.</div>
+            <label class="form-label mt-2">Select district (optional)</label>
+            <select id="districtSelect" class="form-select" disabled>
+              <option value="">-- Select district --</option>
+            </select>
+            <div class="form-text">Selecting a province will load its GeoJSON and fit the map to the boundary. You can then select a district to highlight it.</div>
           </div>
-          <div class="mb-2"><strong>Selected geometry:</strong></div>
-          <pre id="geoJson" style="height:220px;overflow:auto;background:#f8fafc;padding:.6rem;border-radius:6px;border:1px solid #eef2f7">(none)</pre>
+          <pre id="geoJson" style="display:none;height:220px;overflow:auto;background:#f8fafc;padding:.6rem;border-radius:6px;border:1px solid #eef2f7">(none)</pre>
           <div class="d-flex justify-content-between mt-3">
             <button id="locCancel" class="btn btn-outline-secondary">Cancel</button>
             <div>
@@ -156,32 +159,77 @@
       });
 
       // district selector: fetch and load a GeoJSON file
-      document.getElementById('districtSelect').addEventListener('change', (ev) => {
+      document.getElementById('provinceSelect').addEventListener('change', (ev) => {
         const src = ev.target.value;
+        const districtSelect = document.getElementById('districtSelect');
+        // Reset district dropdown
+        districtSelect.innerHTML = '<option value="">-- Select district --</option>';
+        districtSelect.disabled = true;
         if (!src) return;
-        loadDistrictGeoJSON(src);
-        // persist chosen district into draft
+        loadDistrictGeoJSON(src, true);
+        // persist chosen province into draft
         try { const draft = JSON.parse(localStorage.getItem('messageCampaignDraft') || '{}'); draft.districtSource = src; localStorage.setItem('messageCampaignDraft', JSON.stringify(draft)); } catch(e){}
       });
 
-      async function loadDistrictGeoJSON(src) {
+      async function loadDistrictGeoJSON(src, populateDistricts = false) {
         try {
           const res = await fetch(src, {cache: 'no-store'});
           if (!res.ok) throw new Error('Failed to load ' + src);
           const data = await res.json();
           districtLayer.clearLayers(); drawnItems.clearLayers();
-          districtLayer.addData(data);
-          // if the GeoJSON contains features, fit to bounds and persist geometry of the first feature
+          const geoLayer = districtLayer.addData(data);
+          // Fit map to the bounds of the loaded province
+          if (geoLayer && geoLayer.getBounds && geoLayer.getBounds().isValid()) {
+            map.fitBounds(geoLayer.getBounds());
+          }
+          // Optionally update geometry display with the first feature
           const firstFeature = (Array.isArray(data.features) && data.features[0]) ? data.features[0] : null;
           if (firstFeature) {
             const layer = L.geoJSON(firstFeature.geometry);
-            layer.eachLayer(l => { map.fitBounds(l.getBounds()); updateGeoJsonDisplay(l); });
+            layer.eachLayer(l => { updateGeoJsonDisplay(l); });
+          }
+          // Populate district dropdown if requested and features exist
+          if (populateDistricts && Array.isArray(data.features)) {
+            const districtSelect = document.getElementById('districtSelect');
+            let districtOptions = '<option value="">-- Select district --</option>';
+            data.features.forEach((feature, idx) => {
+              // Try to get district name from properties (commonly 'name', 'NAME_1', etc.)
+              let name = feature.properties && (feature.properties.name || feature.properties.NAME_1 || feature.properties.NAME || feature.properties.district || feature.properties.DISTRICT);
+              if (!name) name = 'District ' + (idx + 1);
+              districtOptions += `<option value="${idx}">${name}</option>`;
+            });
+            districtSelect.innerHTML = districtOptions;
+            districtSelect.disabled = false;
+            // Store features for later use
+            window._provinceDistrictFeatures = data.features;
           }
         } catch (err) {
-          console.warn('Could not load district GeoJSON', err);
-          alert('Could not load district file: ' + err.message);
+          console.warn('Could not load province GeoJSON', err);
+          alert('Could not load province file: ' + err.message);
         }
       }
+      // District dropdown: highlight selected district on map
+      document.getElementById('districtSelect').addEventListener('change', function(ev) {
+        const idx = ev.target.value;
+        if (!window._provinceDistrictFeatures || idx === "") {
+          // If none selected, just show full province
+          if (districtLayer && districtLayer.getBounds && districtLayer.getBounds().isValid()) {
+            map.fitBounds(districtLayer.getBounds());
+          }
+          return;
+        }
+        const feature = window._provinceDistrictFeatures[parseInt(idx)];
+        if (feature) {
+          districtLayer.clearLayers();
+          districtLayer.addData(feature);
+          if (districtLayer && districtLayer.getBounds && districtLayer.getBounds().isValid()) {
+            map.fitBounds(districtLayer.getBounds());
+          }
+          // Optionally update geometry display
+          const layer = L.geoJSON(feature.geometry);
+          layer.eachLayer(l => { updateGeoJsonDisplay(l); });
+        }
+      });
 
       document.getElementById('locNext').addEventListener('click', () => {
         // Ensure a geometry exists
