@@ -1,6 +1,32 @@
+/* Compact dashboard tweaks for single view */
+.container {
+  max-width: 1400px;
+}
+.row.g-2, .row.g-3, .row.g-4 {
+  margin-bottom: 0.5rem !important;
+}
+.card, .stat-card, .chart-card {
+  padding: 0.5rem 0.7rem !important;
+  margin-bottom: 0.5rem !important;
+  min-height: 120px;
+}
+.card.mb-3, .card.mb-4 {
+  margin-bottom: 0.7rem !important;
+}
+h2, h5, h6 {
+  margin-bottom: 0.5rem !important;
+}
+.btn, .btn-sm {
+  padding: 0.25rem 0.8rem !important;
+  font-size: 0.97rem !important;
+}
+.table {
+  font-size: 0.97rem !important;
+  margin-bottom: 0 !important;
+}
 :root{
   --card-shadow: 0 8px 20px rgba(17,24,39,0.06);
-  --accent: #2b6ef6;
+  --accent: #2a537c;
   --page-scale: 1;
 }
 body{
@@ -24,8 +50,8 @@ body{
 tbody tr{background:transparent}
 tbody tr td{vertical-align:middle;padding:.6rem}
 .badge-type{font-size:0.75rem;padding:6px 10px;border-radius:999px}
-.type-time{background:#eef7ff;color:#2b6ef6}
-.type-rec{background:#f6eefc;color:#7b2bdc}
+.type-time{background:#e6eefa;color:#2a537c}
+.type-rec{background:#e6eefa;color:#2a537c}
 .type-cond{background:#fff6ea;color:#e07b29}
 .status-active{background:#eafaf0;color:#14924a;padding:6px 10px;border-radius:999px}
 .status-paused{background:#fff4e6;color:#d9762f;padding:6px 10px;border-radius:999px}
@@ -54,8 +80,16 @@ body{min-height:100vh}
 .stat-card .h2{font-size:1.4rem}
 
 /* modern buttons */
-.btn-primary{background:linear-gradient(90deg,#2b6ef6,#7b2bdc);border:0}
+.btn-primary{background:#2a537c !important;border:0}
 .btn-outline-secondary{border-color:#e6e9ee;color:#334155}
+
+/* custom hover for primary buttons */
+.btn-primary:hover,
+.btn-outline-primary:hover {
+  background: #1d3956 !important;
+  border-color: #1d3956 !important;
+  color: #fff !important;
+}
 
 /* hover effects */
 .card:hover{transform:translateY(-4px);transition:transform .18s ease}

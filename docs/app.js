@@ -1,7 +1,7 @@
 const sampleTemplates = [
-  { name: 'Welcome Flow', type: 'Time-time', typeClass: 'type-time', status: 'Active', statusClass: 'status-active', recipients: '15,890' },
-  { name: 'Order Update', type: 'Recepting', typeClass: 'type-rec', status: 'Paused', statusClass: 'status-paused', recipients: '9,210' },
-  { name: 'Support Query', type: 'Conditional', typeClass: 'type-cond', status: 'Paused', statusClass: 'status-paused', recipients: '1' },
+  { name: 'Campaign 1', type: 'Time-time', typeClass: 'type-time', status: 'Active', statusClass: 'status-active', recipients: '15,890' },
+  { name: 'Campaign 2', type: 'Recepting', typeClass: 'type-rec', status: 'Paused', statusClass: 'status-paused', recipients: '9,210' },
+  { name: 'Campaign 3', type: 'Conditional', typeClass: 'type-cond', status: 'Paused', statusClass: 'status-paused', recipients: '1' },
 ];
 
 let messagesChart = null;
