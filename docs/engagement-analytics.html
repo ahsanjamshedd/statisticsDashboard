@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Farmer Engagement Analytics</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="site-header"></div>
+    <main class="w-100 min-vh-100 d-flex flex-column align-items-center justify-content-start" style="background:#f7fafd;">
+      <h2 class="mb-4 fw-bold mt-4" style="font-size:2.5rem">Farmer Engagement Analytics</h2>
+      <div class="card chart-card shadow-lg border-0 rounded-4 w-100" style="max-width:1200px;background:#fff;">
+        <div class="d-flex justify-content-between align-items-center mb-3 p-4 pb-0">
+          <div>
+            <h5 class="mb-1 fw-semibold">Farmer Engagement Trend (Last 90 Days)</h5>
+            <div class="text-muted small">Message Success Rate (Daily)</div>
+          </div>
+          <a href="index.html" class="btn btn-outline-secondary">Back to Dashboard</a>
+        </div>
+        <div class="px-4 pb-4">
+          <canvas id="engagementChartAnalytics" height="180"></canvas>
+        </div>
+      </div>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+      // Dynamically load the site header
+      fetch('header.html')
+        .then(response => response.text())
+        .then(data => {
+          document.getElementById('site-header').innerHTML = data;
+        });
+
+      // Dummy data for 90 days
+      const labels = Array.from({length: 13}, (_, i) => {
+        const d = new Date();
+        d.setDate(d.getDate() - (12 - i) * 7);
+        return d.toISOString().slice(0, 10);
+      });
+      const engagement = [72, 73, 74, 75, 78, 77, 76, 75, 74, 73, 72, 71, 70];
+
+      const ctx = document.getElementById('engagementChartAnalytics').getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Engagement',
+            data: engagement,
+            borderColor: '#2a537c',
+            backgroundColor: 'rgba(42,83,124,0.08)',
+            tension: 0.35,
+            fill: true,
+            pointRadius: 3,
+            pointBackgroundColor: '#2a537c',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              enabled: true,
+              backgroundColor: '#fff',
+              titleColor: '#2a537c',
+              bodyColor: '#2a537c',
+              borderColor: '#eaf1fa',
+              borderWidth: 1,
+              padding: 10,
+              displayColors: false
+            }
+          },
+          scales: {
+            y: {
+              min: 65,
+              max: 80,
+              ticks: { callback: v => v + '%' }
+            }
+          }
+        }
+      });
+    </script>
+  </body>
+</html>

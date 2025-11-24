@@ -67,6 +67,9 @@
               <button id="refreshMetrics" class="btn btn-sm btn-outline-secondary">Refresh</button>
             </div>
             <canvas id="engagementChart" height="120"></canvas>
+                      <div class="pt-3 text-end">
+                        <a href="engagement-analytics.html" class="btn btn-primary">Open Analytics</a>
+                      </div>
           </div>
         </div>
         <div class="col-lg-4">
@@ -79,7 +82,7 @@
               </div>
             </div>
             <div class="pt-3">
-              <a href="analytics-reports.html" class="btn btn-outline-primary w-100">Open Analytics</a>
+              <a href="analytics-reports.html" class="btn btn-primary w-100">Open Analytics</a>
             </div>
           </div>
         </div>
@@ -109,27 +112,51 @@
             <tbody id="templatesTable">
               <tr>
                 <td><span style="font-weight:600; color:#222;">Campaign 1</span></td>
-                <td><span style="background:#eaf1fa;color:#2a537c;padding:4px 16px;border-radius:12px;font-size:0.97rem;">Time-time</span></td>
-                <td><span style="background:#d6f5e7;color:#3bb77e;padding:4px 16px;border-radius:12px;font-size:0.97rem;">Active</span></td>
+                <td>
+                  <span style="background:#eaf1fa;color:#2a537c;padding:4px 16px;border-radius:12px;font-size:0.97rem;">Time-time</span><br>
+                  <span class="text-muted small">2025-11-20</span>
+                </td>
+                <td><span style="background:#eaf1fa;color:#2a537c;padding:4px 16px;border-radius:12px;font-size:0.97rem;">Active</span></td>
                 <td>15,890</td>
-                <td style="font-size:1.2rem;">⋮</td>
-                <td style="font-size:1.2rem;">⋮</td>
+                <td>
+                  <span style="background:#eaf1fa;color:#2a537c;padding:4px 16px;border-radius:12px;font-size:0.97rem;">12,500</span>
+                </td>
+                <td>
+                  <button class="btn btn-sm btn-link text-primary" title="Edit"><i class="bi bi-pencil"></i></button>
+                  <button class="btn btn-sm btn-link text-danger" title="Delete"><i class="bi bi-trash"></i></button>
+                </td>
               </tr>
               <tr>
                 <td><span style="font-weight:600; color:#222;">Campaign 2</span></td>
-                <td><span style="background:#eaf1fa;color:#2a537c;padding:4px 16px;border-radius:12px;font-size:0.97rem;">Recepting</span></td>
-                <td><span style="background:#fff4e0;color:#ffb86c;padding:4px 16px;border-radius:12px;font-size:0.97rem;">Paused</span></td>
+                <td>
+                  <span style="background:#eaf1fa;color:#2a537c;padding:4px 16px;border-radius:12px;font-size:0.97rem;">Recepting</span><br>
+                  <span class="text-muted small">2025-11-15</span>
+                </td>
+                <td><span style="background:#eaf1fa;color:#2a537c;padding:4px 16px;border-radius:12px;font-size:0.97rem;">Paused</span></td>
                 <td>9,210</td>
-                <td style="font-size:1.2rem;">⋮</td>
-                <td style="font-size:1.2rem;">⋮</td>
+                <td>
+                  <span style="background:#eaf1fa;color:#2a537c;padding:4px 16px;border-radius:12px;font-size:0.97rem;">7,800</span>
+                </td>
+                <td>
+                  <button class="btn btn-sm btn-link text-primary" title="Edit"><i class="bi bi-pencil"></i></button>
+                  <button class="btn btn-sm btn-link text-danger" title="Delete"><i class="bi bi-trash"></i></button>
+                </td>
               </tr>
               <tr>
                 <td><span style="font-weight:600; color:#222;">Campaign 3</span></td>
-                <td><span style="background:#fff4e0;color:#ffb86c;padding:4px 16px;border-radius:12px;font-size:0.97rem;">Conditional</span></td>
-                <td><span style="background:#fff4e0;color:#ffb86c;padding:4px 16px;border-radius:12px;font-size:0.97rem;">Paused</span></td>
+                <td>
+                  <span style="background:#eaf1fa;color:#2a537c;padding:4px 16px;border-radius:12px;font-size:0.97rem;">Conditional</span><br>
+                  <span class="text-muted small">2025-11-10</span>
+                </td>
+                <td><span style="background:#eaf1fa;color:#2a537c;padding:4px 16px;border-radius:12px;font-size:0.97rem;">Paused</span></td>
                 <td>1</td>
-                <td style="font-size:1.2rem;">⋮</td>
-                <td style="font-size:1.2rem;">⋮</td>
+                <td>
+                  <span style="background:#eaf1fa;color:#2a537c;padding:4px 16px;border-radius:12px;font-size:0.97rem;">1</span>
+                </td>
+                <td>
+                  <button class="btn btn-sm btn-link text-primary" title="Edit"><i class="bi bi-pencil"></i></button>
+                  <button class="btn btn-sm btn-link text-danger" title="Delete"><i class="bi bi-trash"></i></button>
+                </td>
               </tr>
             </tbody>
           </table>

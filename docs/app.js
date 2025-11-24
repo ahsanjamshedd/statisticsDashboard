@@ -42,10 +42,16 @@ function renderTemplates() {
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td><div class="fw-semibold">${t.name}</div></td>
-      <td><span class="badge-type ${t.typeClass}">${t.type}</span></td>
-      <td><span class="${t.statusClass}">${t.status}</span></td>
+      <td>
+        <span class="text-muted small">${t.date || '2025-11-20'}</span>
+      </td>
+      <td><span style="background:#eaf1fa;color:#2a537c;padding:4px 16px;border-radius:12px;font-size:0.97rem;">${t.status}</span></td>
       <td>${t.recipients}</td>
-      <td><button class="btn btn-sm btn-link text-muted">⋮</button></td>
+      <td><span style="background:#eaf1fa;color:#2a537c;padding:4px 16px;border-radius:12px;font-size:0.97rem;">${t.opened || '12,500'}</span></td>
+      <td>
+        <button class="btn btn-sm btn-link text-primary" title="Edit"><i class="bi bi-pencil"></i></button>
+        <button class="btn btn-sm btn-link text-danger" title="Delete"><i class="bi bi-trash"></i></button>
+      </td>
     `;
     tbody.appendChild(tr);
   });
@@ -77,7 +83,7 @@ function createOrUpdateCharts(metrics) {
   const labels = metrics.labels || [];
   const engagement = metrics.engagement || [];
 
-  // engagement line chart
+  // engagement line chart (match analytics page style)
   const ctx = document.getElementById('engagementChart').getContext('2d');
   if (messagesChart) {
     messagesChart.data.labels = labels;
@@ -86,8 +92,44 @@ function createOrUpdateCharts(metrics) {
   } else {
     messagesChart = new Chart(ctx, {
       type: 'line',
-      data: { labels, datasets: [{ label: 'Engagement', data: engagement, borderColor: '#2b6ef6', backgroundColor: 'rgba(43,110,246,0.06)', tension: 0.35, fill: true }] },
-      options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { ticks: { callback: v => v + '%' } } } }
+      data: {
+        labels,
+        datasets: [{
+          label: 'Engagement',
+          data: engagement,
+          borderColor: '#2a537c',
+          backgroundColor: 'rgba(42,83,124,0.08)',
+          tension: 0.35,
+          fill: true,
+          pointRadius: 3,
+          pointBackgroundColor: '#2a537c',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            enabled: true,
+            backgroundColor: '#fff',
+            titleColor: '#2a537c',
+            bodyColor: '#2a537c',
+            borderColor: '#eaf1fa',
+            borderWidth: 1,
+            padding: 10,
+            displayColors: false
+          }
+        },
+        scales: {
+          y: {
+            min: 60,
+            max: 80,
+            ticks: { callback: v => v + '%' }
+          }
+        }
+      }
     });
   }
 
@@ -104,10 +146,60 @@ function createOrUpdateCharts(metrics) {
         analyticsPreviewChart.data.datasets[0].data = previewData;
         analyticsPreviewChart.update();
       } else {
+          // Use the same solid blue as the main analytics bars
+          const barColor = '#2a537c';
+
         analyticsPreviewChart = new Chart(pctx, {
-          type: 'line',
-          data: { labels: previewLabels, datasets: [{ data: previewData, borderColor: '#2b6ef6', backgroundColor: 'rgba(43,110,246,0.12)', tension: 0.4, fill: true, pointRadius: 0 }] },
-          options: { maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: false } }, elements: { line: { borderWidth: 2 } } }
+          type: 'bar',
+          data: {
+            labels: previewLabels,
+            datasets: [{
+              data: previewData,
+                backgroundColor: barColor,
+              borderRadius: 12,
+              barPercentage: 0.6,
+              categoryPercentage: 0.7,
+              borderSkipped: false,
+              shadowOffsetX: 0,
+              shadowOffsetY: 2,
+              shadowBlur: 6,
+              shadowColor: 'rgba(79,138,235,0.15)'
+            }]
+          },
+          options: {
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                enabled: true,
+                backgroundColor: '#fff',
+                titleColor: '#2a537c',
+                bodyColor: '#2a537c',
+                borderColor: '#eaf1fa',
+                borderWidth: 1,
+                padding: 10,
+                displayColors: false
+              }
+            },
+            layout: { padding: { top: 8, bottom: 8, left: 8, right: 8 } },
+            scales: {
+              x: {
+                display: false,
+                grid: { display: false, drawBorder: false }
+              },
+              y: {
+                display: false,
+                min: 0,
+                max: 100,
+                grid: { display: false, drawBorder: false }
+              }
+            },
+            elements: {
+              bar: {
+                borderRadius: 12
+              }
+            }
+          }
         });
       }
     }catch(e){
@@ -177,7 +269,7 @@ function addRandomData(metrics) {
     }
     metrics = {
       labels,
-      engagement: labels.map(() => +(randomBetween(1,4)).toFixed(1)),
+      engagement: labels.map(() => Math.round(randomBetween(60,80))),
       topSegments: [
         { name: 'Irrigation Updates', rate: Math.round(randomBetween(60,92)) },
         { name: 'Paddy Farmers', rate: Math.round(randomBetween(50,85)) },
@@ -200,7 +292,7 @@ function addRandomData(metrics) {
       return +(clamp(base + jitter, 0, 20)).toFixed(1);
     });
   } else {
-    metrics.engagement = (metrics.labels || []).map(() => +(randomBetween(1,5)).toFixed(1));
+    metrics.engagement = (metrics.labels || []).map(() => Math.round(randomBetween(60,80)));
   }
 
   // Top segments: jitter their rates or create defaults
